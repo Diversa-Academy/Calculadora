@@ -582,15 +582,31 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // --- RASTREIO DE INTERAÇÃO (GOOGLE ANALYTICS) ---
-        // Monitora onde as pessoas param de preencher
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', function() {
-                gtag('event', 'preenchendo_campo', {
-                    'nome_do_campo': this.name
-                });
-            }, { once: true });
-        });
+       // --- RASTREIO DETALHADO (GOOGLE ANALYTICS) ---
+document.querySelectorAll('input').forEach(input => {
+    // Quando o usuário termina de interagir com um campo
+    input.addEventListener('blur', function() {
+        if (this.value.trim() !== "") {
+            // Evento de Campo Preenchido
+            gtag('event', 'campo_preenchido', {
+                'nome_campo': this.name,
+                'valor_preenchido': 'sim'
+            });
+        } else {
+            // Evento de Campo Abandonado Vazio
+            gtag('event', 'campo_abandonado_vazio', {
+                'nome_campo': this.name
+            });
+        }
+    });
+});
+
+// O evento de clique no botão (Tentativa de Envio)
+document.getElementById('btnEnviar').addEventListener('click', function() {
+    gtag('event', 'clique_confirmar_calculo', {
+        'status_formulario': document.getElementById('calcForm').checkValidity() ? 'valido' : 'invalido'
+    });
+});
 
         // --- 1. UTILITÁRIOS ---
         function formatCurrency(input) {
@@ -744,3 +760,4 @@
     </script>
 </body>
 </html>
+

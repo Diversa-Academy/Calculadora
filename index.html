@@ -1414,6 +1414,8 @@
             const patrimonioReferencia = (idade * (renda * 12)) / 10;
             const indice = patrimonioReferencia > 0 ? patrimonioLiquido / patrimonioReferencia : 0;
 
+            const classificacao = classify(patrimonioLiquido, patrimonioReferencia, indice);
+
             let cidade = 'Não identificada';
             let estado = 'Não identificado';
             try {
@@ -1435,6 +1437,7 @@
             formData.append('Patrimonio_Liquido', patrimonioLiquido.toFixed(2));
             formData.append('Patrimonio_Ideal', patrimonioReferencia.toFixed(2));
             formData.append('Status_Ratio', indice.toFixed(2));
+            formData.append('Status_Texto', classificacao.statusText);
             formData.append('cidade', cidade);
             formData.append('estado', estado);
 
@@ -1470,25 +1473,10 @@
             }
         };
 
-        function renderResults(patrimonioLiquido, patrimonioReferencia, indice) {
-            const formatBRL = value => value.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-                maximumFractionDigits: 0
-            });
+        function classify(patrimonioLiquido, patrimonioReferencia, indice) {
+            let statusColor, statusText, adviceText, displayPercentage;
 
-            document.getElementById('res_liquido').textContent = formatBRL(patrimonioLiquido);
-            document.getElementById('res_ideal').textContent = formatBRL(patrimonioReferencia);
-
-            const status = document.getElementById('status');
-            const advice = document.getElementById('conselho');
-            const gauge = document.getElementById('gaugeChart');
-            const percentage = document.getElementById('percText');
-
-            let statusColor;
-            let statusText;
-            let adviceText;
-            let displayPercentage = Math.max(0, Math.round(indice * 100));
+            displayPercentage = Math.max(0, Math.round(indice * 100));
 
             if (patrimonioLiquido < 0) {
                 statusText = 'Reorganização prioritária';
@@ -1508,6 +1496,26 @@
                 statusColor = 'var(--success)';
                 adviceText = 'Seu patrimônio está acima da referência estimada para sua idade e renda. A prioridade tende a migrar de acumulação para arquitetura: diversificação, proteção, liquidez, eficiência tributária e continuidade do patrimônio.';
             }
+
+            return { statusText, statusColor, adviceText, displayPercentage };
+        }
+
+        function renderResults(patrimonioLiquido, patrimonioReferencia, indice) {
+            const formatBRL = value => value.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                maximumFractionDigits: 0
+            });
+
+            document.getElementById('res_liquido').textContent = formatBRL(patrimonioLiquido);
+            document.getElementById('res_ideal').textContent = formatBRL(patrimonioReferencia);
+
+            const status = document.getElementById('status');
+            const advice = document.getElementById('conselho');
+            const gauge = document.getElementById('gaugeChart');
+            const percentage = document.getElementById('percText');
+
+            const { statusText, statusColor, adviceText, displayPercentage } = classify(patrimonioLiquido, patrimonioReferencia, indice);
 
             status.textContent = statusText;
             status.style.setProperty('--status-color', statusColor);
